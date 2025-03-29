@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Can't decide what anime to watch? Swipe through personalized recommendations and discover your next favorite show!">
+    <meta name="keywords" content="anime, recommendation, what to watch, anime suggester, swipe anime">
+    <title>AnimeSwipe | Find Your Next Anime</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --dark: #121212;
+            --light: #f8f9fa;
+            --card-bg: #1e1e2e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(to right, var(--dark), #1a1a2e);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Anime Particles Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(106, 17, 203, 0.5);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--endX), var(--endY)) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Header */
+        header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+        
+        nav a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--secondary);
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        /* Hero Section */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+            gap: 2rem;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            opacity: 0.9;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-lg {
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+        }
+        
+        /* Swipe Cards Section */
+        .swipe-section {
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .swipe-container {
+            width: 100%;
+            max-width: 400px;
+            height: 500px;
+            position: relative;
+            margin: 0 auto;
+        }
+        
+        .anime-card {
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            position: absolute;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.5s, opacity 0.5s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .anime-image {
+            flex: 1;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .anime-info {
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        
+        .anime-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .anime-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .anime-genres {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .genre {
+            background: rgba(106, 17, 203, 0.3);
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+        }
+        
+        .swipe-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .swipe-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.8rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .swipe-dislike {
+            background: white;
+            color: #ff4757;
+        }
+        
+        .swipe-like {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+        }
+        
+        /* Quiz Section */
+        .quiz-section {
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(37, 117, 252, 0.1), rgba(106, 17, 203, 0.1));
+            margin: 3rem 0;
+        }
+        
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .quiz-question {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .quiz-option {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option:hover {
+            background: rgba(106, 17, 203, 0.3);
+        }
+        
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--secondary);
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .social-links a {
+            color: var(--light);
+            font-size: 1.5rem;
+            transition: color 0.3s;
+        }
+        
+        .social-links a:hover {
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+            
+            nav ul {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Anime Particles Background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-play-circle"></i>
+            <span>AnimeSwipe</span>
+        </div>
+        
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#swipe">Swipe</a></li>
+                <li><a href="#quiz">Quiz</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+        </nav>
+        
+        <div class="auth-buttons">
+            <button class="btn btn-outline" id="loginBtn">Login</button>
+            <button class="btn btn-primary" id="signupBtn">Sign Up</button>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <h1>Can't Decide What Anime to Watch?</h1>
+        <p>Swipe through personalized recommendations and discover your next favorite show based on your taste!</p>
+        
+        <div class="cta-buttons">
+            <button class="btn btn-primary btn-lg" id="startSwipeBtn">
+                <i class="fas fa-play"></i> Start Swiping
+            </button>
+            <button class="btn btn-outline btn-lg" id="takeQuizBtn">
+                <i class="fas fa-question"></i> Take Quiz
+            </button>
+        </div>
+    </section>
+    
+    <!-- Swipe Cards Section -->
+    <section class="swipe-section" id="swipe">
+        <h2 class="section-title">Swipe to Discover</h2>
+        
+        <div class="swipe-container" id="swipeContainer">
+            <!-- Anime cards will be dynamically inserted here -->
+        </div>
+        
+        <div class="swipe-buttons">
+            <div class="swipe-btn swipe-dislike" id="dislikeBtn">
+                <i class="fas fa-times"></i>
+            </div>
+            <div class="swipe-btn swipe-like" id="likeBtn">
+                <i class="fas fa-heart"></i>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Quiz Section -->
+    <section class="quiz-section" id="quiz">
+        <div class="quiz-container" id="quizContainer">
+            <h3>Help Us Understand Your Taste</h3>
+            <p>Answer a few questions to get better recommendations</p>
+            
+            <div id="quizContent">
+                <div class="quiz-question" id="quizQuestion">
+                    What's your favorite anime genre?
+                </div>
+                <div class="quiz-options" id="quizOptions">
+                    <div class="quiz-option" data-value="action">Action</div>
+                    <div class="quiz-option" data-value="romance">Romance</div>
+                    <div class="quiz-option" data-value="comedy">Comedy</div>
+                    <div class="quiz-option" data-value="fantasy">Fantasy</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="#">About</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Contact</a>
+            <a href="#">FAQ</a>
+        </div>
+        
+        <div class="social-links">
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-tiktok"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-discord"></i></a>
+        </div>
+        
+        <p class="copyright">© 2023 AnimeSwipe. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Anime Particles Animation
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size
+                const size = Math.random() * 10 + 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                
+                // Random animation duration and delay
+                const duration = Math.random() * 20 + 10;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                // Random end position
+                particle.style.setProperty('--endX', `${Math.random() * 200 - 100}px`);
+                particle.style.setProperty('--endY', `${Math.random() * 200 - 100}px`);
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Anime Data
+        const animeData = [
+            {
+                id: 1,
+                title: "Attack on Titan",
+                image: "https://i.imgur.com/JtVJb9a.png",
+                genres: ["Action", "Drama", "Fantasy"],
+                episodes: 75,
+                rating: 9.0,
+                year: 2013,
+                description: "Humanity fights for survival against giant humanoid Titans."
+            },
+            {
+                id: 2,
+                title: "Demon Slayer",
+                image: "https://i.imgur.com/5XQZr0W.jpg",
+                genres: ["Action", "Supernatural", "Historical"],
+                episodes: 26,
+                rating: 8.7,
+                year: 2019,
+                description: "A young boy becomes a demon slayer after his family is slaughtered."
+            },
+            {
+                id: 3,
+                title: "Jujutsu Kaisen",
+                image: "https://i.imgur.com/8zKjJYQ.jpg",
+                genres: ["Action", "Supernatural", "Horror"],
+                episodes: 24,
+                rating: 8.8,
+                year: 2020,
+                description: "A boy eats a cursed finger and becomes host to a powerful curse."
+            },
+            {
+                id: 4,
+                title: "My Hero Academia",
+                image: "https://i.imgur.com/3qYQeZr.jpg",
+                genres: ["Action", "Superhero", "School"],
+                episodes: 113,
+                rating: 8.4,
+                year: 2016,
+                description: "A boy without powers in a superpowered world dreams of becoming a hero."
+            },
+            {
+                id: 5,
+                title: "Spy x Family",
+                image: "https://i.imgur.com/7XQZr0W.jpg",
+                genres: ["Action", "Comedy", "Slice of Life"],
+                episodes: 25,
+                rating: 8.9,
+                year: 2022,
+                description: "A spy forms a fake family for a mission, unaware they all have secrets."
+            }
+        ];
+        
+        // Swipe Functionality
+        let currentCardIndex = 0;
+        let likedAnime = [];
+        
+        function createAnimeCards() {
+            const container = document.getElementById('swipeContainer');
+            container.innerHTML = '';
+            
+            animeData.forEach((anime, index) => {
+                const card = document.createElement('div');
+                card.className = 'anime-card';
+                card.id = `animeCard-${index}`;
+                card.style.zIndex = animeData.length - index;
+                card.style.opacity = index === 0 ? '1' : '0.5';
+                card.style.transform = index === 0 ? 'scale(1)' : 'scale(0.9)';
+                
+                card.innerHTML = `
+                    <div class="anime-image" style="background-image: url('${anime.image}')"></div>
+                    <div class="anime-info">
+                        <h3 class="anime-title">${anime.title}</h3>
+                        <div class="anime-meta">
+                            <span>⭐ ${anime.rating}</span>
+                            <span>📺 ${anime.episodes} eps</span>
+                            <span>📅 ${anime.year}</span>
+                        </div>
+                        <div class="anime-genres">
+                            ${anime.genres.map(genre => `<span class="genre">${genre}</span>`).join('')}
+                        </div>
+                        <p>${anime.description}</p>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        function swipeCard(direction) {
+            const currentCard = document.getElementById(`animeCard-${currentCardIndex}`);
+            
+            if (direction === 'like') {
+                likedAnime.push(animeData[currentCardIndex]);
+                currentCard.style.transform = 'translateX(100vw) rotate(30deg)';
+            } else {
+                currentCard.style.transform = 'translateX(-100vw) rotate(-30deg)';
+            }
+            
+            currentCard.style.opacity = '0';
+            
+            setTimeout(() => {
+                currentCardIndex++;
+                
+                if (currentCardIndex < animeData.length) {
+                    const nextCard = document.getElementById(`animeCard-${currentCardIndex}`);
+                    nextCard.style.opacity = '1';
+                    nextCard.style.transform = 'scale(1)';
+                    
+                    // Show "No more cards" if last card
+                    if (currentCardIndex === animeData.length - 1) {
+                        setTimeout(() => {
+                            alert("You've viewed all recommendations! Here's what you liked:\n" + 
+                                likedAnime.map(a => a.title).join(', '));
+                        }, 500);
+                    }
+                }
+            }, 300);
+        }
+        
+        // Quiz Functionality
+        let currentQuestion = 0;
+        const quizQuestions = [
+            {
+                question: "What's your favorite anime genre?",
+                options: ["Action", "Romance", "Comedy", "Fantasy", "Horror", "Slice of Life"]
+            },
+            {
+                question: "How many episodes do you prefer?",
+                options: ["Short (12-24 eps)", "Medium (25-50 eps)", "Long (50+ eps)", "Doesn't matter"]
+            },
+            {
+                question: "Preferred animation style?",
+                options: ["Modern", "Classic", "Unique art", "Doesn't matter"]
+            }
+        ];
+        
+        function showQuizQuestion() {
+            if (currentQuestion >= quizQuestions.length) {
+                document.getElementById('quizContent').innerHTML = `
+                    <h3>Thanks for completing the quiz!</h3>
+                    <p>We'll use your answers to improve recommendations</p>
+                    <button class="btn btn-primary" id="startWithQuizBtn">
+                        Start Swiping with My Preferences
+                    </button>
+                `;
+                return;
+            }
+            
+            const question = quizQuestions[currentQuestion];
+            document.getElementById('quizQuestion').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = question.options.map(option => `
+                <div class="quiz-option" data-value="${option.toLowerCase()}">${option}</div>
+            `).join('');
+            
+            // Add event listeners to new options
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    currentQuestion++;
+                    showQuizQuestion();
+                });
+            });
+        }
+        
+        // Event Listeners
+        document.getElementById('startSwipeBtn').addEventListener('click', () => {
+            document.getElementById('swipe').scrollIntoView({ behavior: 'smooth' });
+            createAnimeCards();
+        });
+        
+        document.getElementById('takeQuizBtn').addEventListener('click', () => {
+            document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
+            showQuizQuestion();
+        });
+        
+        document.getElementById('likeBtn').addEventListener('click', () => swipeCard('like'));
+        document.getElementById('dislikeBtn').addEventListener('click', () => swipeCard('dislike'));
+        
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            alert("Login functionality would be added with Firebase Auth");
+        });
+        
+        document.getElementById('signupBtn').addEventListener('click', () => {
+            alert("Signup functionality would be added with Firebase Auth");
+        });
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            createParticles();
+            showQuizQuestion();
+        });
+    </script>
+</body>
+</html>
